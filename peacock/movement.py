@@ -27,10 +27,10 @@ def move_cycle(self, ser):
         velocity = target_vel
         
         print(position, velocity)
-        #posconvert = str( format( mm_to_pulse(position), '05x') )
-        #velconvert = str( format( mmpersec_to_pulse(velocity), '03x'))
-        posconvert = '\x30\x30\x30\x63\x38'
-        velconvert = '\x30\x30\x31'
+        posconvert = str( format( mm_to_pulse(position), '05x') )
+        posconvert = posconvert.upper()
+        velconvert = str( format( mmpersec_to_pulse(velocity), '03x'))
+        velconvert = velconvert.upper()
         command += velconvert + accelerator + waytotravel + posconvert
 
     command += '\x30\x0D\x0A'
