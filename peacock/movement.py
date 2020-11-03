@@ -28,7 +28,9 @@ def move_cycle(self, ser):
         
         print(position, velocity)
         posconvert = str( format( mm_to_pulse(position), '05x') )
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Sooooooooooooooooooooooooooooo Inportant #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         posconvert = posconvert.upper()
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Sooooooooooooooooooooooooooooo Inportant #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         velconvert = str( format( mmpersec_to_pulse(velocity), '03x'))
         velconvert = velconvert.upper()
         command += velconvert + accelerator + waytotravel + posconvert
