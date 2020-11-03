@@ -5,7 +5,7 @@ import sip
 import serial
 import time
 
-import movement
+import movement_u1
 import measurement_u1
  
 class MainWindow(QWidget):
@@ -14,22 +14,24 @@ class MainWindow(QWidget):
 
         #Window Setting
         self.setGeometry(0, 0, 1300, 1300)
-        self.setWindowTitle('QCheckBox')      
+        self.setWindowTitle('QCheckBox')
+
+        #CheckBox
+        
   
-       #Dropdown list
-        self.cb = QComboBox(self)
-        self.cb.addItems(["upstream hor.", "upstream ver.", "downstream hor.", "downstream ver."])
-        self.cb.setGeometry(200, 325, 240, 340)
-        self.cb.resize(200, 30)
+        #Dropdown list
+        self.cb_type_preset = QComboBox(self)
+        self.cb_type_preset.addItems(["A", "B", "C", "D", "E", "F", "G", "H", "I"])
+        self.cb_type_preset.setGeometry(500, 75, 240, 340)
 
         #Serial Port
         self.ser = serial.Serial(
-            port ='/dev/tty.usbserial-FTRVIAFX', 
-            baudrate = 9600,
+            port ='/dev/tty.usbserial-FTRU3RQX', 
+            baudrate = 38400,
             parity = serial.PARITY_NONE,
             stopbits = serial.STOPBITS_ONE,
             bytesize = serial.EIGHTBITS,
-            timeout = 20
+            timeout = 2
             )
 
         #Button Setting
@@ -44,12 +46,12 @@ class MainWindow(QWidget):
 
         self.button_move_cycle = QPushButton('Move 1 cycle', self)
         self.button_move_cycle.setGeometry(0, 0, 150, 80)
-        self.button_move_cycle.clicked.connect(lambda:movement_u1.move_cycle(self,self.ser)) 
+        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser)) 
         self.button_move_cycle.move(0, 200)
 
         self.button_move_loop = QPushButton('Move 1 loop', self)
         self.button_move_loop.setGeometry(0, 0, 150, 80)
-        self.button_move_loop.clicked.connect(lambda:movement_u1.move_loop(self.ser)) 
+        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self.ser)) 
         self.button_move_loop.move(0, 300)
 
         self.button_getpos = QPushButton('Current Position', self)
@@ -66,6 +68,10 @@ class MainWindow(QWidget):
         self.button_manual_command.setGeometry(0, 0, 150, 80)
         self.button_manual_command.clicked.connect(self.manual_command)
         self.button_manual_command.move(0, 600)
+
+        self.button_emergency = QPushButton('Emergency Stop Button', self)
+        self.button_emergency.setGeometry(550, 800, 300, 50)
+        self.button_emergency.clicked.connect(self.emergency_stop)
 
         self.qbtn = QPushButton('Quit', self)
         self.qbtn.clicked.connect(QCoreApplication.instance().quit)
@@ -90,28 +96,18 @@ class MainWindow(QWidget):
         self.textbox_bytesize.resize(200, 20)
 
         self.textbox_target_pos = QLineEdit(self)
-        self.textbox_target_pos.move(200, 225)
-        self.textbox_target_pos.resize(200, 20)
+        self.textbox_target_pos.move(250, 220)
+        self.textbox_target_pos.resize(100, 20)
+        self.textbox_target_pos.setText(str(0))
 
         self.textbox_target_vel = QLineEdit(self)
-        self.textbox_target_vel.move(450, 225)
-        self.textbox_target_vel.resize(200, 20)
+        self.textbox_target_vel.move(250, 250)
+        self.textbox_target_vel.resize(100, 20)
+        self.textbox_target_vel.setText(str(1))
 
-        self.textbox_pos_act1 = QLineEdit(self)
-        self.textbox_pos_act1.move(200, 425)
-        self.textbox_pos_act1.resize(200, 20)
-
-        self.textbox_pos_act2 = QLineEdit(self)
-        self.textbox_pos_act2.move(450, 425)
-        self.textbox_pos_act2.resize(200, 20)
-
-        self.textbox_pos_act3 = QLineEdit(self)
-        self.textbox_pos_act3.move(700, 425)
-        self.textbox_pos_act3.resize(200, 20)
-
-        self.textbox_pos_act4 = QLineEdit(self)
-        self.textbox_pos_act4.move(950, 425)
-        self.textbox_pos_act4.resize(200, 20)
+        self.textbox_pos_act = QLineEdit(self)
+        self.textbox_pos_act.move(200, 425)
+        self.textbox_pos_act.resize(200, 20)
 
         self.textbox_error_info = QLineEdit(self)
         self.textbox_error_info.move(200, 525)
@@ -126,16 +122,15 @@ class MainWindow(QWidget):
         self.textbox_manual_command_result.resize(400, 20)
     
     def connection(self):
-        time.sleep(2)
         self.textbox_connect.setText(self.ser.name)
         self.textbox_baudrate.setText(str(self.ser.baudrate))
         self.textbox_parity.setText(str(self.ser.parity))
         self.textbox_bytesize.setText(str(self.ser.bytesize))
 
     def make_error(self):
+        self.ser.reset_input_buffer()
         errorcommand = '0AB\x0D\x0A'
         self.ser.write(errorcommand.encode())
-        self.ser.flush()
         time.sleep(2)
         response = self.ser.readline()
         self.textbox_error_info.setText(str(response))
@@ -143,18 +138,21 @@ class MainWindow(QWidget):
     def reset_alarm(self):
         resetcommand = '0AR\r\n'
         print("Reset Alarm")
-        print(resetcommand.encode())
         self.ser.write(resetcommand.encode())
         self.ser.flush()
-        time.sleep(2)
         self.textbox_error_info.setText('')
+
+    def emergency_stop(self):
+        stopcommand = '0SP\r\n'
+        print("Emergency Stop")
+        self.ser.write(stopcommand.encode())
+        self.textbox_error_info.setText('Emergency!!!')
 
     def manual_command(self):
         command = self.textbox_manual_command.text()
         command = command + "\r\n"
         self.ser.write(command.encode())
         self.ser.flush()
-        time.sleep(1)
         response = self.ser.readline()
         self.textbox_manual_command_result.setText(str(response))
  
