@@ -23,14 +23,13 @@ def move_cycle(ser, ith):
         target_vel = 5
 
     command = '0MV'
-    for j in range(4):
-        position = target_pos
-        velocity = target_vel
+    position = target_pos
+    velocity = target_vel
 
-        print(position, velocity)
-        posconvert = str( format(int(mm_to_pulse(position)), '05x') )
-        velconvert = str( format(int(mmpersec_to_pulse(velocity)), '04x'))
-        command += velconvert + accelerator + waytotravel + posconvert
+    print(position, velocity)
+    posconvert = str( format(int(mm_to_pulse(position)), '05x') )
+    velconvert = str( format(int(mmpersec_to_pulse(velocity)), '04x'))
+    command += velconvert + accelerator + waytotravel + posconvert
     command += '0\x0D\x0A'
     print(command)
     ser.write(command.encode())

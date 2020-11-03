@@ -6,12 +6,12 @@ import serial
 import time
     
 def move_cycle(self, ser):
-    accelerator = '22' #fixed
-    waytotravel = '1' #fixed
+    accelerator = '\x30\x32' #fixed
+    waytotravel = '\x31' #fixed
     posid = "0A" #fixed
 
-    target_pos = int(self.textbox_target_pos.text())
-    target_vel = int(self.textbox_target_vel.text())
+    target_pos = float(self.textbox_target_pos.text())
+    target_vel = float(self.textbox_target_vel.text())
 
     print("targetpos", target_pos, "targetvel", target_vel)
 
@@ -27,17 +27,20 @@ def move_cycle(self, ser):
         velocity = target_vel
         
         print(position, velocity)
-        posconvert = str( format(int(mm_to_pulse(position)), '05x') )
-        velconvert = str( format(int(mmpersec_to_pulse(velocity)), '03x'))
+        #posconvert = str( format( mm_to_pulse(position), '05x') )
+        #velconvert = str( format( mmpersec_to_pulse(velocity), '03x'))
+        posconvert = '\x30\x30\x30\x63\x38'
+        velconvert = '\x30\x30\x31'
         command += velconvert + accelerator + waytotravel + posconvert
-    command += '0\x0D\x0A'
+
+    command += '\x30\x0D\x0A'
     print(command)
     ser.write(command.encode())
-    time.sleep(2)
+    time.sleep(3)
     ser.flush()
     response = ser.readline()
     print(response)
-    time.sleep(1)
+    time.sleep(3)
 
 def mm_to_pulse(position):
 

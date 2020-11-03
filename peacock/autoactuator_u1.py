@@ -6,7 +6,7 @@ import serial
 import time
 
 import movement
-import measurement
+import measurement_u1
  
 class MainWindow(QWidget):
     def __init__(self, parent=None):
@@ -44,12 +44,12 @@ class MainWindow(QWidget):
 
         self.button_move_cycle = QPushButton('Move 1 cycle', self)
         self.button_move_cycle.setGeometry(0, 0, 150, 80)
-        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser)) 
+        self.button_move_cycle.clicked.connect(lambda:movement_u1.move_cycle(self,self.ser)) 
         self.button_move_cycle.move(0, 200)
 
         self.button_move_loop = QPushButton('Move 1 loop', self)
         self.button_move_loop.setGeometry(0, 0, 150, 80)
-        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self.ser)) 
+        self.button_move_loop.clicked.connect(lambda:movement_u1.move_loop(self.ser)) 
         self.button_move_loop.move(0, 300)
 
         self.button_getpos = QPushButton('Current Position', self)
