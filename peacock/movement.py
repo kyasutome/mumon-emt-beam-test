@@ -8,7 +8,8 @@ import os
 import time
 import measurement
     
-def move_cycle(self, ser):
+def move_cycle(self, ser_a3, ser_u1):
+
     accelerator = '\x30\x32' #fixed
     waytotravel = '\x31' #fixed
     posid = "0A" #fixed
@@ -19,15 +20,15 @@ def move_cycle(self, ser):
     target_vel2 = float(self.textbox_target_vel2.text())
     target_pos3 = float(self.textbox_target_pos3.text())
     target_vel3 = float(self.textbox_target_vel3.text())
-
+        
     if(target_pos1 < 0 or target_pos1 >= 50):
         target_pos1 = 10
-
+        
     if(target_vel1 < 0 or target_vel1 >= 10):
         target_vel1 = 5
     
     command = '0MV'
-
+    
     for i in range(4):
         if(i==0):
             position = target_pos1
@@ -36,7 +37,7 @@ def move_cycle(self, ser):
         if(i==1):
             position = target_pos2
             velocity = target_vel2
-
+            
         if(i==2):
             position = target_pos3
             velocity = target_vel3
@@ -47,19 +48,47 @@ def move_cycle(self, ser):
         
         print(position, velocity)
         posconvert = str( format( mm_to_pulse(position), '05x') )
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Sooooooooooooooooooooooooooooo Important #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         posconvert = posconvert.upper()
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Sooooooooooooooooooooooooooooo Important #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         velconvert = str( format( mmpersec_to_pulse(velocity), '03x'))
         velconvert = velconvert.upper()
         command += velconvert + accelerator + waytotravel + posconvert
-
+        
     command += '\x30\x0D\x0A'
     print(command)
-    ser.write(command.encode())
-    ser.flush()
-    response = ser.readline()
-    measurement.get_current_position(self, ser)
+    ser_a3.write(command.encode())
+    ser_a3.flush()
+    response = ser_a3.readline()
+    #measurement.get_current_position(self, ser_a3, 'a3')
+
+    accelerator = '\x31' #fixed
+    waytotravel = '\x31' #fixed
+    posid = "0A" #fixed
+    
+    target_pos4 = float(self.textbox_target_pos4.text())
+    target_vel4 = float(self.textbox_target_vel4.text())
+    
+    if(target_pos4 < 0 or target_pos4 >= 500):
+        target_pos1 = 10
+        
+    if(target_vel4 < 0 or target_vel4 >= 100):
+        target_vel1 = 5
+    
+    command = '0MV'
+    
+    position = target_pos4
+    velocity = target_vel4
+    print(position, velocity)
+    posconvert = str( format( mm_to_pulse(position), '05x') )
+    posconvert = posconvert.upper()
+    velconvert = str( format( mmpersec_to_pulse(velocity), '04x'))
+    velconvert = velconvert.upper()
+    command += velconvert + accelerator + waytotravel + posconvert        
+    command += '\x0D\x0A'
+    print(command)
+    ser_u1.write(command.encode())
+    ser_u1.flush()
+    response = ser_u1.readline()
+    #measurement.get_current_position(self, ser_u1, 'u1')
         
 def mm_to_pulse(position):
 
@@ -70,11 +99,53 @@ def mmpersec_to_pulse(velocity):
     pulse = velocity
     return int(pulse)
     
-def move_loop(ser):
+def move_loop(ser_a3, ser_u1):
+    accelerator = '\x31' 
+    waytotravel = '\x31'
 
     readscript('setting')
+    time.sleep(2)
+    self.textbox_message.setText("Successful Setting");
     readscript('on')
+    self.textbox_message.setText("Power ON");
+
+    time.sleep(10)
+    command = '0MV'
+    position = 0
+    velocity = 1
+    print(position, velocity)
+    posconvert = str( format( mm_to_pulse(position), '05x') )
+    posconvert = posconvert.upper()
+    velconvert = str( format( mmpersec_to_pulse(velocity), '04x'))
+    velconvert = velconvert.upper()
+    command += velconvert + accelerator + waytotravel + posconvert
+    command += '\x0D\x0A'
+    print(command)
+    ser_u1.write(command.encode())
+    ser_u1.flush()
+    response = ser_u1.readline()
+    measurement_u1.get_current_position(self, ser)
+
+    time.sleep(10)
+    command = '0MV'
+    position = 10
+    velocity = 1
+    print(position, velocity)
+    posconvert = str( format( mm_to_pulse(position), '05x') )
+    posconvert = posconvert.upper()
+    velconvert = str( format( mmpersec_to_pulse(velocity), '04x'))
+    velconvert = velconvert.upper()
+    command += velconvert + accelerator + waytotravel + posconvert
+    command += '\x0D\x0A'
+    print(command)
+    ser_u1.write(command.encode())
+    ser_u1.flush()
+    response = ser_u1.readline()
+    measurement_u1.get_current_position(self, ser)
+    time.sleep(10)
+
     readscript('off')
+    self.textbox_message.setText("Power OFF");
 
     #accelerator = "22" #fixed
     #waytotravel = "2" #fixed
@@ -113,15 +184,15 @@ def move_loop(ser):
 def readscript(str):
     if(str=='setting'):
         script_path = os.path.dirname(os.path.abspath(__file__))
-        path_sh = os.path.join(script_path, './shell/test_setting.sh')
+        path_sh = os.path.join(script_path, 'matusada_power/power_set.sh')
         subprocess.run(['sh', path_sh])
 
     if(str=='on'):
         script_path = os.path.dirname(os.path.abspath(__file__))
-        path_sh = os.path.join(script_path, './shell/test_on.sh')
+        path_sh = os.path.join(script_path, 'matusada_power/power_on.sh')
         subprocess.run(['sh', path_sh])
 
     if(str=='off'):
         script_path = os.path.dirname(os.path.abspath(__file__))
-        path_sh = os.path.join(script_path, './shell/test_off.sh')
+        path_sh = os.path.join(script_path, 'matusada_power/power_off.sh')
         subprocess.run(['sh', path_sh])

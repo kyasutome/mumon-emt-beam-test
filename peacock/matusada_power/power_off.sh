@@ -1,2 +1,2 @@
 #!/usr/bin/bash
-$ ./power_OFF
+/Users/kenji/Documents/mumon-git/mumon-emt-beam-test-hub/peacock/matusada_power/power_OFF

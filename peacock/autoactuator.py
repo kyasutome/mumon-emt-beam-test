@@ -7,23 +7,24 @@ import time
 
 import movement
 import measurement
+import util
  
 class MainWindow(QWidget):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
         #Window Setting
-        self.setGeometry(0, 0, 1300, 1300)
+        self.setGeometry(0, 0, 1200, 800)
         self.setWindowTitle('QCheckBox')      
   
         #Dropdown list
 
         self.cb_type_preset = QComboBox(self)
         self.cb_type_preset.addItems(["A", "B", "C", "D", "E", "F", "G", "H", "I"])
-        self.cb_type_preset.setGeometry(900, 75, 240, 340)
+        self.cb_type_preset.setGeometry(1080, 215, 70, 50)
 
         #Serial Port
-        self.ser = serial.Serial(
+        self.ser_a3 = serial.Serial(
             port ='/dev/tty.usbserial-FTRU3RQX', 
             baudrate = 38400,
             parity = serial.PARITY_NONE,
@@ -32,66 +33,93 @@ class MainWindow(QWidget):
             timeout = 2
             )
 
+        self.ser_u1 = serial.Serial(
+            port ='/dev/tty.usbserial-FTRVIAFX', 
+            baudrate = 9600,
+            parity = serial.PARITY_NONE,
+            stopbits = serial.STOPBITS_ONE,
+            bytesize = serial.EIGHTBITS,
+            timeout = 4
+            )
+
         #Button Setting
+        #Util
         self.button_connect = QPushButton('Device Info', self)
         self.button_connect.setGeometry(0, 0, 150, 80)
-        self.button_connect.clicked.connect(self.connection) 
+        self.button_connect.clicked.connect(lambda:util.connection(self)) 
 
         self.button_resetalarm = QPushButton('Alarm Reset', self)
         self.button_resetalarm.setGeometry(0, 0, 150, 80)
-        self.button_resetalarm.clicked.connect(self.reset_alarm) 
+        self.button_resetalarm.clicked.connect(lambda:util.reset_alarm(self)) 
         self.button_resetalarm.move(0, 100)
-
-        self.button_move_cycle = QPushButton('Move 1 cycle', self)
-        self.button_move_cycle.setGeometry(0, 0, 150, 80)
-        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser)) 
-        self.button_move_cycle.move(0, 200)
-
-        self.button_move_loop = QPushButton('Move 1 loop', self)
-        self.button_move_loop.setGeometry(0, 0, 150, 80)
-        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self.ser)) 
-        self.button_move_loop.move(0, 300)
-
-        self.button_getpos = QPushButton('Current Position', self)
-        self.button_getpos.setGeometry(0, 0, 150, 80)
-        self.button_getpos.clicked.connect(lambda:measurement.get_current_position(self,self.ser)) 
-        self.button_getpos.move(0, 400)
-
-        self.button_makeerror = QPushButton('Error Code', self)
-        self.button_makeerror.setGeometry(0, 0, 150, 80)
-        self.button_makeerror.clicked.connect(self.make_error) 
-        self.button_makeerror.move(0, 500)
 
         self.button_manual_command = QPushButton('Manual Command', self)
         self.button_manual_command.setGeometry(0, 0, 150, 80)
-        self.button_manual_command.clicked.connect(self.manual_command)
-        self.button_manual_command.move(0, 600)
+        self.button_manual_command.clicked.connect(lambda:util.manual_command(self))
+        self.button_manual_command.move(0, 500)
 
-        self.button_emergency = QPushButton('Emergency Stop Button', self)
-        self.button_emergency.setGeometry(550, 800, 300, 50)
-        self.button_emergency.clicked.connect(self.emergency_stop)
+        self.button_emergency_a3 = QPushButton('Emergency Stop Button For A3', self)
+        self.button_emergency_a3.setGeometry(300, 725, 300, 50)
+        self.button_emergency_a3.clicked.connect(lambda:util.emergency_stop(self, 'a3'))
+
+        self.button_emergency_u1 = QPushButton('Emergency Stop Button For U1', self)
+        self.button_emergency_u1.setGeometry(700, 725, 300, 50)
+        self.button_emergency_u1.clicked.connect(lambda:util.emergency_stop(self, 'u1'))
 
         self.qbtn = QPushButton('Quit', self)
         self.qbtn.clicked.connect(QCoreApplication.instance().quit)
         self.qbtn.resize(self.qbtn.sizeHint())
-        self.qbtn.move(0, 800)
+        self.qbtn.move(0, 700)
+
+        #Movement
+        self.button_move_cycle = QPushButton('Move 1 cycle', self)
+        self.button_move_cycle.setGeometry(0, 0, 150, 80)
+        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser_a3,self.ser_u1))
+        self.button_move_cycle.move(0, 200)
+
+        self.button_move_loop = QPushButton('Move 1 loop', self)
+        self.button_move_loop.setGeometry(0, 0, 150, 80)
+        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self.ser_a3, self.ser_u1)) 
+        self.button_move_loop.move(0, 300)
+
+        self.button_getpos = QPushButton('Current Position', self)
+        self.button_getpos.setGeometry(0, 0, 150, 80)
+        self.button_getpos.clicked.connect(lambda:measurement.get_current_position(self,self.ser_a3,'a3')) 
+        self.button_getpos.clicked.connect(lambda:measurement.get_current_position(self,self.ser_u1,'u1')) 
+        self.button_getpos.move(0, 400)
 
         #TestBox setting
-        self.textbox_connect = QLineEdit(self)
-        self.textbox_connect.move(200, 35)
-        self.textbox_connect.resize(200, 20)
+        self.textbox_connect_a3 = QLineEdit(self)
+        self.textbox_connect_a3.move(200, 10)
+        self.textbox_connect_a3.resize(200, 20)
 
-        self.textbox_baudrate = QLineEdit(self)
-        self.textbox_baudrate.move(450, 35)
-        self.textbox_baudrate.resize(200, 20)
+        self.textbox_baudrate_a3 = QLineEdit(self)
+        self.textbox_baudrate_a3.move(450, 10)
+        self.textbox_baudrate_a3.resize(200, 20)
 
-        self.textbox_parity = QLineEdit(self)
-        self.textbox_parity.move(700, 35)
-        self.textbox_parity.resize(200, 20)
+        self.textbox_parity_a3 = QLineEdit(self)
+        self.textbox_parity_a3.move(700, 10)
+        self.textbox_parity_a3.resize(200, 20)
 
-        self.textbox_bytesize = QLineEdit(self)
-        self.textbox_bytesize.move(950, 35)
-        self.textbox_bytesize.resize(200, 20)
+        self.textbox_bytesize_a3 = QLineEdit(self)
+        self.textbox_bytesize_a3.move(950, 10)
+        self.textbox_bytesize_a3.resize(200, 20)
+
+        self.textbox_connect_u1 = QLineEdit(self)
+        self.textbox_connect_u1.move(200, 40)
+        self.textbox_connect_u1.resize(200, 20)
+
+        self.textbox_baudrate_u1 = QLineEdit(self)
+        self.textbox_baudrate_u1.move(450, 40)
+        self.textbox_baudrate_u1.resize(200, 20)
+
+        self.textbox_parity_u1 = QLineEdit(self)
+        self.textbox_parity_u1.move(700, 40)
+        self.textbox_parity_u1.resize(200, 20)
+
+        self.textbox_bytesize_u1 = QLineEdit(self)
+        self.textbox_bytesize_u1.move(950, 40)
+        self.textbox_bytesize_u1.resize(200, 20)
 
         self.textbox_target_pos1 = QLineEdit(self)
         self.textbox_target_pos1.move(250, 220)
@@ -123,6 +151,16 @@ class MainWindow(QWidget):
         self.textbox_target_vel3.resize(100, 20)
         self.textbox_target_vel3.setText(str(1))
 
+        self.textbox_target_pos4 = QLineEdit(self)
+        self.textbox_target_pos4.move(850, 220)
+        self.textbox_target_pos4.resize(100, 20)
+        self.textbox_target_pos4.setText(str(0))
+
+        self.textbox_target_vel4 = QLineEdit(self)
+        self.textbox_target_vel4.move(850, 250)
+        self.textbox_target_vel4.resize(100, 20)
+        self.textbox_target_vel4.setText(str(1))
+
         self.textbox_pos_act1 = QLineEdit(self)
         self.textbox_pos_act1.move(200, 425)
         self.textbox_pos_act1.resize(200, 20)
@@ -135,52 +173,21 @@ class MainWindow(QWidget):
         self.textbox_pos_act3.move(700, 425)
         self.textbox_pos_act3.resize(200, 20)
 
-        self.textbox_error_info = QLineEdit(self)
-        self.textbox_error_info.move(200, 525)
-        self.textbox_error_info.resize(200, 20)
+        self.textbox_pos_act4 = QLineEdit(self)
+        self.textbox_pos_act4.move(950, 425)
+        self.textbox_pos_act4.resize(200, 20)
 
-        self.textbox_manual_command = QLineEdit(self)
-        self.textbox_manual_command.move(200, 625)
-        self.textbox_manual_command.resize(200, 20)
+        self.textbox_manual_command_a3 = QLineEdit(self)
+        self.textbox_manual_command_a3.move(200, 525)
+        self.textbox_manual_command_a3.resize(200, 20)
 
-        self.textbox_manual_command_result = QLineEdit(self)
-        self.textbox_manual_command_result.move(450, 625)
-        self.textbox_manual_command_result.resize(400, 20)
-    
-    def connection(self):
-        self.textbox_connect.setText(self.ser.name)
-        self.textbox_baudrate.setText(str(self.ser.baudrate))
-        self.textbox_parity.setText(str(self.ser.parity))
-        self.textbox_bytesize.setText(str(self.ser.bytesize))
+        self.textbox_message_a3 = QLineEdit(self)
+        self.textbox_message_a3.move(400, 625)
+        self.textbox_message_a3.resize(500, 20)
 
-    def make_error(self):
-        self.ser.reset_input_buffer()
-        errorcommand = '0AB\x0D\x0A'
-        self.ser.write(errorcommand.encode())
-        time.sleep(2)
-        response = self.ser.readline()
-        self.textbox_error_info.setText(str(response))
-
-    def reset_alarm(self):
-        resetcommand = '0AR\r\n'
-        print("Reset Alarm")
-        self.ser.write(resetcommand.encode())
-        self.ser.flush()
-        self.textbox_error_info.setText('')
-
-    def emergency_stop(self):
-        stopcommand = '0SP\r\n'
-        print("Emergency Stop")
-        self.ser.write(stopcommand.encode())
-        self.textbox_error_info.setText('Emergency!!!')
-
-    def manual_command(self):
-        command = self.textbox_manual_command.text()
-        command = command + "\r\n"
-        self.ser.write(command.encode())
-        self.ser.flush()
-        response = self.ser.readline()
-        self.textbox_manual_command_result.setText(str(response))
+        self.textbox_message_u1 = QLineEdit(self)
+        self.textbox_message_u1.move(400, 675)
+        self.textbox_message_u1.resize(500, 20)
  
 if __name__ == '__main__':
     app = QApplication(sys.argv)
