@@ -9,7 +9,6 @@ import time
 import measurement
     
 def move_cycle(self, ser_a3, ser_u1, a3, u1):
-
     if(a3==True):
         accelerator = '\x30\x32' #fixed
         waytotravel = '\x31' #fixed

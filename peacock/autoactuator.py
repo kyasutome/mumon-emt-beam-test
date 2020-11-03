@@ -18,11 +18,10 @@ class MainWindow(QWidget):
     def initUI(self):
 
         #Window Setting
-        self.setGeometry(0, 0, 1200, 800)
+        self.setGeometry(0, 0, 1200, 1000)
         self.setWindowTitle('Acutuator Automation Application "Peacock"')      
         
-        #Dropdown list
-        
+        #Dropdown list        
         self.cb_type_preset = QComboBox(self)
         self.cb_type_preset.addItems(["A", "B", "C", "D", "E", "F", "G", "H", "I"])
         self.cb_type_preset.setGeometry(1080, 215, 70, 50)
@@ -70,19 +69,24 @@ class MainWindow(QWidget):
         self.button_resetalarm.clicked.connect(lambda:util.reset_alarm(self,a3,u1)) 
         self.button_resetalarm.move(0, 100)
 
-        self.button_manual_command = QPushButton('Manual Command', self)
-        self.button_manual_command.setGeometry(0, 0, 150, 80)
-        self.button_manual_command.clicked.connect(lambda:util.manual_command(self), u1)
-        self.button_manual_command.move(0, 500)
-        
-        self.button_emergency_a3 = QPushButton('Emergency Stop Button For Both', self)
-        self.button_emergency_a3.setGeometry(500, 725, 300, 50)
+        self.button_manual_command_a3 = QPushButton('Command For A3', self)
+        self.button_manual_command_a3.setGeometry(0, 0, 150, 80)
+        self.button_manual_command_a3.clicked.connect(lambda:util.manual_command(self,'a3'))
+        self.button_manual_command_a3.move(0, 500)
+
+        self.button_manual_command_u1 = QPushButton('Command For U1', self)
+        self.button_manual_command_u1.setGeometry(0, 0, 150, 80)
+        self.button_manual_command_u1.clicked.connect(lambda:util.manual_command(self,'u1'))
+        self.button_manual_command_u1.move(0, 600)
+
+        self.button_emergency_a3 = QPushButton('Stop', self)
+        self.button_emergency_a3.setGeometry(0, 700, 150, 80)
         self.button_emergency_a3.clicked.connect(lambda:util.emergency_stop(self, a3, u1))
         
         self.qbtn = QPushButton('Quit', self)
         self.qbtn.clicked.connect(QCoreApplication.instance().quit)
-        self.qbtn.resize(self.qbtn.sizeHint())
-        self.qbtn.move(0, 700)
+        self.qbtn.resize(150, 80)
+        self.qbtn.move(0, 800)
             
         #Movement
         self.button_move_cycle = QPushButton('Move 1 cycle', self)
@@ -194,14 +198,18 @@ class MainWindow(QWidget):
         self.textbox_manual_command_a3 = QLineEdit(self)
         self.textbox_manual_command_a3.move(200, 525)
         self.textbox_manual_command_a3.resize(200, 20)
+
+        self.textbox_manual_command_u1 = QLineEdit(self)
+        self.textbox_manual_command_u1.move(200, 625)
+        self.textbox_manual_command_u1.resize(200, 20)
         
         self.textbox_message_a3 = QLineEdit(self)
-        self.textbox_message_a3.move(400, 625)
-        self.textbox_message_a3.resize(500, 20)
+        self.textbox_message_a3.move(300, 800)
+        self.textbox_message_a3.resize(700, 30)
         
         self.textbox_message_u1 = QLineEdit(self)
-        self.textbox_message_u1.move(400, 675)
-        self.textbox_message_u1.resize(500, 20)
+        self.textbox_message_u1.move(300, 850)
+        self.textbox_message_u1.resize(700, 30)
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
