@@ -44,13 +44,13 @@ class MainWindow(QWidget):
 
         self.button_move_cycle = QPushButton('Move 1 cycle', self)
         self.button_move_cycle.setGeometry(0, 0, 150, 80)
-        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self.ser, 2)) 
+        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser)) 
         self.button_move_cycle.move(0, 200)
 
-        self.button_move_once = QPushButton('Move 1 part', self)
-        self.button_move_once.setGeometry(0, 0, 150, 80)
-        self.button_move_once.clicked.connect(lambda:movement.move_once(self.ser)) 
-        self.button_move_once.move(0, 300)
+        self.button_move_loop = QPushButton('Move 1 loop', self)
+        self.button_move_loop.setGeometry(0, 0, 150, 80)
+        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self.ser)) 
+        self.button_move_loop.move(0, 300)
 
         self.button_getpos = QPushButton('Current Position', self)
         self.button_getpos.setGeometry(0, 0, 150, 80)
@@ -88,6 +88,14 @@ class MainWindow(QWidget):
         self.textbox_bytesize = QLineEdit(self)
         self.textbox_bytesize.move(950, 35)
         self.textbox_bytesize.resize(200, 20)
+
+        self.textbox_target_pos = QLineEdit(self)
+        self.textbox_target_pos.move(200, 225)
+        self.textbox_target_pos.resize(200, 20)
+
+        self.textbox_target_vel = QLineEdit(self)
+        self.textbox_target_vel.move(450, 225)
+        self.textbox_target_vel.resize(200, 20)
 
         self.textbox_pos_act1 = QLineEdit(self)
         self.textbox_pos_act1.move(200, 425)
