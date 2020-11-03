@@ -1,2 +1,2 @@
-#!/usr/bin/bash
-$ ./power_OFF
+#!/bin/bash
+./power_OFF

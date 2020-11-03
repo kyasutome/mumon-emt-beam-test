@@ -1,2 +1,2 @@
-#!/usr/bin/bash
-$ ./power_set
+#!/bin/bash
+./power_set
