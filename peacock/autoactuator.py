@@ -9,6 +9,7 @@ import serial.tools.list_ports
 import movement
 import measurement
 import util
+import yokogawa_power
  
 class MainWindow(QWidget):
     def __init__(self, parent=None):
@@ -29,9 +30,11 @@ class MainWindow(QWidget):
         #Serial Port
         a3 = False
         u1 = False
+        gs = False
         ports = list(serial.tools.list_ports.comports())
         for p in ports:
             if('FTRU3RQX' in str(p)):
+                print(p)
                 self.ser_a3 = serial.Serial(
                     port ='/dev/tty.usbserial-FTRU3RQX', 
                     baudrate = 38400,
@@ -43,6 +46,7 @@ class MainWindow(QWidget):
                 a3 = True
 
             if('FTRVIAFX' in str(p)):
+                print(p)
                 self.ser_u1 = serial.Serial(
                     port ='/dev/cu.usbserial-FTRVIAFX', 
                     baudrate = 9600,
@@ -53,10 +57,24 @@ class MainWindow(QWidget):
                     )
                 u1 = True
 
+            if('AB0KED3C' in str(p)):
+                print(p)
+                self.ser_gs = serial.Serial(
+                    port ='/dev/cu.usbserial-AB0KED3C', 
+                    baudrate = 38400,
+                    parity = serial.PARITY_NONE,
+                    stopbits = serial.STOPBITS_ONE,
+                    bytesize = serial.EIGHTBITS,
+                    timeout = 4
+                    )
+                gs = True
+
         if(a3 == False):
             self.ser_a3 = serial.Serial()
         if(u1 == False):
             self.ser_u1 = serial.Serial()
+        if(gs == False):
+            self.ser_gs = serial.Serial()
 
         #Button Setting
         #Util

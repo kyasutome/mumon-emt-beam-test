@@ -7,6 +7,8 @@ import subprocess
 import os
 import time
 import measurement
+import matsusada_power
+import yokogawa_power
     
 def move_cycle(self, ser_a3, ser_u1, a3, u1):
     if(a3==True):
@@ -164,19 +166,3 @@ def move_loop(ser_a3, ser_u1, a3, u1):
             time.sleep(15)    
             readscript('off')
             self.textbox_message.setText("Power OFF");
-
-def readscript(str):
-    if(str=='setting'):
-        script_path = os.path.dirname(os.path.abspath(__file__))
-        path_sh = os.path.join(script_path, 'matusada_power/power_set.sh')
-        subprocess.run(['sh', path_sh])
-
-    if(str=='on'):
-        script_path = os.path.dirname(os.path.abspath(__file__))
-        path_sh = os.path.join(script_path, 'matusada_power/power_on.sh')
-        subprocess.run(['sh', path_sh])
-
-    if(str=='off'):
-        script_path = os.path.dirname(os.path.abspath(__file__))
-        path_sh = os.path.join(script_path, 'matusada_power/power_off.sh')
-        subprocess.run(['sh', path_sh])
