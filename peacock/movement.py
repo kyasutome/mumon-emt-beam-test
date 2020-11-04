@@ -6,6 +6,7 @@ import serial
 import subprocess
 import os
 import time
+
 import measurement
 import matsusada_power
 import yokogawa_power
@@ -60,7 +61,6 @@ def move_cycle(self, ser_a3, ser_u1, a3, u1):
         ser_a3.write(command.encode())
         ser_a3.flush()
         response = ser_a3.readline()
-        #measurement.get_current_position(self, ser_a3, ser_u1, a3, u1)
 
     if(u1==True):
         accelerator = '\x31' #fixed
@@ -90,7 +90,6 @@ def move_cycle(self, ser_a3, ser_u1, a3, u1):
         print(command)
         ser_u1.write(command.encode())
         response = ser_u1.readline()
-        #measurement.get_current_position(self, ser_a3, ser_u1, a3, u1)
         
 def mm_to_pulse(position):
     pulse = position / 0.005
@@ -100,9 +99,15 @@ def mmpersec_to_pulse(velocity):
     pulse = velocity
     return int(pulse)
     
-def move_loop(ser_a3, ser_u1, a3, u1):
-    accelerator = '\x31' 
-    waytotravel = '\x31'
+def move_loop(self, ser_a3, ser_u1, a3, u1):
+    yokogawa_power.output_on(self)
+    matsusada_power.output_on(self)
+
+    accelerator_u1 = '\x31' 
+    waytotravel_u1 = '\x31'
+
+    accelerator_a3 = '\x31\x31' 
+    waytotravel_a3 = '\x31'
     datadir = "/Users/kenji/Documents/mumon-git/mumon-emt-beam-test-hub/peacock/data"
     path_to_posdata_a3 = datadir + "/position.txt"
     path_to_veldata_a3 = datadir + "/velocity.txt"
@@ -118,51 +123,49 @@ def move_loop(ser_a3, ser_u1, a3, u1):
     with open(path_to_veldata_u1) as g:
         veldata_u1 = g.read().split()
 
-    readscript('setting')
-    self.textbox_message.setText("Setting");
-    readscript('on')
-    self.textbox_message.setText("Power ON");
-
     time.sleep(10) # wait for the controlers ready
 
     for icycle in range(1):
         if(icycle > 0):
             time.sleep(10)
-        if(u1==True):
-            command = '0MV'
-            position = 0
-            velocity = 1
-            print(position, velocity)
-            posconvert = str( format( mm_to_pulse(position), '05x') )
-            posconvert = posconvert.upper()
-            velconvert = str( format( mmpersec_to_pulse(velocity), '04x'))
-            velconvert = velconvert.upper()
-            command += velconvert + accelerator + waytotravel + posconvert
-            command += '\x0D\x0A'
-            print(command)
-            ser_u1.write(command.encode())
-            ser_u1.flush()
-            response = ser_u1.readline()
-            measurement_u1.get_current_position(self, ser)
-
-        if(a3==True):
-            command = '0MV'
-            for j in range(4):
-                id = 4*icycle + j
-                position = int(posdata_a3[id])
-                velocity = int(veldata_a3[id])
-
+        for jcycle in range(2):
+            if(u1==True):
+                command = '0MV'
+                position = int(posdata_u1[icycle])
+                velocity = int(veldata_u1[icycle])
                 print(position, velocity)
-                posconvert = str( format(int(mm_to_pulse(position)), '05x') )
-                velconvert = str( format(int(mmpersec_to_pulse(velocity)), '03x'))
-                command += velconvert + accelerator + waytotravel + posconvert
+                posconvert = str( format( mm_to_pulse(position), '05x') )
+                posconvert = posconvert.upper()
+                velconvert = str( format( mmpersec_to_pulse(velocity), '04x'))
+                velconvert = velconvert.upper()
+                command += velconvert + accelerator_u1 + waytotravel_u1 + posconvert
+                command += '\x0D\x0A'
                 print(command)
-            command += '0\x0D\x0A'
-            ser_a3.write(command.encode())
-            time.sleep(2)
-            response = ser_a3.readline()
-            print(response)
+                ser_u1.write(command.encode())
+                ser_u1.flush()
+                response = ser_u1.readline()
+
+            if(a3==True):
+                command = '0MV'
+                for j in range(4):
+                    id = 4*icycle + j
+                    position = int(posdata_a3[id])
+                    velocity = int(veldata_a3[id])
+                    
+                    print(position, velocity)
+                    posconvert = str( format(int(mm_to_pulse(position)), '05x') )
+                    velconvert = str( format(int(mmpersec_to_pulse(velocity)), '03x'))
+                    command += velconvert + accelerator_a3 + waytotravel_a3 + posconvert
+                command += '0\x0D\x0A'
+                print(command)
+                ser_a3.write(command.encode())
+                time.sleep(2)
+                response = ser_a3.readline()
+                print(response)
+            if(jcycle==0):
+                time.sleep(2)            
             
-            time.sleep(15)    
-            readscript('off')
-            self.textbox_message.setText("Power OFF");
+        time.sleep(15)
+        yokogawa_power.output_off(self)
+        matsusada_power.output_off(self)  
+        

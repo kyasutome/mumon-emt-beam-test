@@ -10,6 +10,7 @@ import movement
 import measurement
 import util
 import yokogawa_power
+import matsusada_power
  
 class MainWindow(QWidget):
     def __init__(self, parent=None):
@@ -20,12 +21,12 @@ class MainWindow(QWidget):
 
         #Window Setting
         self.setGeometry(0, 0, 1200, 1000)
-        self.setWindowTitle('Acutuator Automation Application "Peacock"')      
+        self.setWindowTitle('Acutuator Automaton Peacock')      
         
         #Dropdown list        
         self.cb_type_preset = QComboBox(self)
         self.cb_type_preset.addItems(["A", "B", "C", "D", "E", "F", "G", "H", "I"])
-        self.cb_type_preset.setGeometry(1080, 215, 70, 50)
+        self.cb_type_preset.setGeometry(1080, 615, 70, 50)
 
         #Serial Port
         a3 = False
@@ -76,6 +77,15 @@ class MainWindow(QWidget):
         if(gs == False):
             self.ser_gs = serial.Serial()
 
+        layout_power_y = 100
+        layout_alarm_y = 200
+        layout_command_a3_y = 300
+        layout_command_u1_y = 400
+        layout_stop_y = 500
+        layout_cycle_y = 600
+        layout_loop_y = 700
+        layout_current_pos_y = 800
+
         #Button Setting
         #Util
         self.button_connect = QPushButton('Device Info', self)
@@ -83,46 +93,60 @@ class MainWindow(QWidget):
         self.button_connect.clicked.connect(lambda:util.connection(self, a3, u1)) 
         
         self.button_resetalarm = QPushButton('Alarm Reset', self)
-        self.button_resetalarm.setGeometry(0, 0, 150, 80)
+        self.button_resetalarm.setGeometry(0, layout_alarm_y, 150, 80)
         self.button_resetalarm.clicked.connect(lambda:util.reset_alarm(self,a3,u1)) 
-        self.button_resetalarm.move(0, 100)
 
         self.button_manual_command_a3 = QPushButton('Command For A3', self)
-        self.button_manual_command_a3.setGeometry(0, 0, 150, 80)
+        self.button_manual_command_a3.setGeometry(0, layout_command_a3_y, 150, 80)
         self.button_manual_command_a3.clicked.connect(lambda:util.manual_command(self,'a3'))
-        self.button_manual_command_a3.move(0, 500)
 
         self.button_manual_command_u1 = QPushButton('Command For U1', self)
-        self.button_manual_command_u1.setGeometry(0, 0, 150, 80)
+        self.button_manual_command_u1.setGeometry(0, layout_command_u1_y, 150, 80)
         self.button_manual_command_u1.clicked.connect(lambda:util.manual_command(self,'u1'))
-        self.button_manual_command_u1.move(0, 600)
 
         self.button_emergency_a3 = QPushButton('Stop', self)
-        self.button_emergency_a3.setGeometry(0, 700, 150, 80)
+        self.button_emergency_a3.setGeometry(0, layout_stop_y, 150, 80)
         self.button_emergency_a3.clicked.connect(lambda:util.emergency_stop(self, a3, u1))
-        
-        self.qbtn = QPushButton('Quit', self)
-        self.qbtn.clicked.connect(QCoreApplication.instance().quit)
-        self.qbtn.resize(150, 80)
-        self.qbtn.move(0, 800)
+
+        #power
+        self.button_power_yokogawa = QPushButton('Y Set', self)
+        self.button_power_yokogawa.setGeometry(0, layout_power_y, 80, 80)
+        self.button_power_yokogawa.clicked.connect(lambda:yokogawa_power.setting(self))
+
+        self.button_power_yokogawa = QPushButton('Y ON', self)
+        self.button_power_yokogawa.setGeometry(100, layout_power_y, 80, 80)
+        self.button_power_yokogawa.clicked.connect(lambda:yokogawa_power.output_on(self))
+
+        self.button_power_yokogawa = QPushButton('Y OFF', self)
+        self.button_power_yokogawa.setGeometry(200, layout_power_y, 80, 80)
+        self.button_power_yokogawa.clicked.connect(lambda:yokogawa_power.output_off(self))
+
+        self.button_power_matsusada = QPushButton('M Set', self)
+        self.button_power_matsusada.setGeometry(600, layout_power_y, 80, 80)
+        self.button_power_matsusada.clicked.connect(lambda:matsusada_power.setting(self))
+
+        self.button_power_matsusada = QPushButton('M ON', self)
+        self.button_power_matsusada.setGeometry(700, layout_power_y, 80, 80)
+        self.button_power_matsusada.clicked.connect(lambda:matsusada_power.output_on(self))
+
+        self.button_power_matsusada = QPushButton('M OFF', self)
+        self.button_power_matsusada.setGeometry(800, layout_power_y, 80, 80)
+        self.button_power_matsusada.clicked.connect(lambda:matsusada_power.output_off(self))
             
         #Movement
         self.button_move_cycle = QPushButton('Move 1 cycle', self)
-        self.button_move_cycle.setGeometry(0, 0, 150, 80)
+        self.button_move_cycle.setGeometry(0, layout_cycle_y, 150, 80)
         self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser_a3,self.ser_u1,a3,u1))
-        self.button_move_cycle.move(0, 200)
         
         self.button_move_loop = QPushButton('Move 1 loop', self)
-        self.button_move_loop.setGeometry(0, 0, 150, 80)
-        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self.ser_a3, self.ser_u1,a3,u1)) 
-        self.button_move_loop.move(0, 300)
+        self.button_move_loop.setGeometry(0, layout_loop_y, 150, 80)
+        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self, self.ser_a3, self.ser_u1,a3,u1)) 
             
         self.button_getpos = QPushButton('Current Position', self)
-        self.button_getpos.setGeometry(0, 0, 150, 80)
+        self.button_getpos.setGeometry(0, layout_current_pos_y, 150, 80)
         self.button_getpos.clicked.connect(
             lambda:measurement.get_current_position(
             self,self.ser_a3,self.ser_u1,a3,u1)) 
-        self.button_getpos.move(0, 400)
         
         #TestBox setting
         self.textbox_connect_a3 = QLineEdit(self)
@@ -158,76 +182,84 @@ class MainWindow(QWidget):
         self.textbox_bytesize_u1.resize(200, 20)
             
         self.textbox_target_pos1 = QLineEdit(self)
-        self.textbox_target_pos1.move(250, 220)
+        self.textbox_target_pos1.move(250, layout_cycle_y+20)
         self.textbox_target_pos1.resize(100, 20)
         self.textbox_target_pos1.setText(str(0))
         
         self.textbox_target_vel1 = QLineEdit(self)
-        self.textbox_target_vel1.move(250, 250)
+        self.textbox_target_vel1.move(250, layout_cycle_y+50)
         self.textbox_target_vel1.resize(100, 20)
         self.textbox_target_vel1.setText(str(1))
         
         self.textbox_target_pos2 = QLineEdit(self)
-        self.textbox_target_pos2.move(450, 220)
+        self.textbox_target_pos2.move(450, layout_cycle_y+20)
         self.textbox_target_pos2.resize(100, 20)
         self.textbox_target_pos2.setText(str(0))
             
         self.textbox_target_vel2 = QLineEdit(self)
-        self.textbox_target_vel2.move(450, 250)
+        self.textbox_target_vel2.move(450, layout_cycle_y+50)
         self.textbox_target_vel2.resize(100, 20)
         self.textbox_target_vel2.setText(str(1))
             
         self.textbox_target_pos3 = QLineEdit(self)
-        self.textbox_target_pos3.move(650, 220)
+        self.textbox_target_pos3.move(650, layout_cycle_y+20)
         self.textbox_target_pos3.resize(100, 20)
         self.textbox_target_pos3.setText(str(0))
         
         self.textbox_target_vel3 = QLineEdit(self)
-        self.textbox_target_vel3.move(650, 250)
+        self.textbox_target_vel3.move(650, layout_cycle_y+50)
         self.textbox_target_vel3.resize(100, 20)
         self.textbox_target_vel3.setText(str(1))
             
         self.textbox_target_pos4 = QLineEdit(self)
-        self.textbox_target_pos4.move(850, 220)
+        self.textbox_target_pos4.move(850, layout_cycle_y+20)
         self.textbox_target_pos4.resize(100, 20)
         self.textbox_target_pos4.setText(str(0))
         
         self.textbox_target_vel4 = QLineEdit(self)
-        self.textbox_target_vel4.move(850, 250)
+        self.textbox_target_vel4.move(850, layout_cycle_y+50)
         self.textbox_target_vel4.resize(100, 20)
         self.textbox_target_vel4.setText(str(1))
         
         self.textbox_pos_act1 = QLineEdit(self)
-        self.textbox_pos_act1.move(200, 425)
+        self.textbox_pos_act1.move(200, layout_current_pos_y+25)
         self.textbox_pos_act1.resize(200, 20)
         
         self.textbox_pos_act2 = QLineEdit(self)
-        self.textbox_pos_act2.move(450, 425)
+        self.textbox_pos_act2.move(450, layout_current_pos_y+25)
         self.textbox_pos_act2.resize(200, 20)
         
         self.textbox_pos_act3 = QLineEdit(self)
-        self.textbox_pos_act3.move(700, 425)
+        self.textbox_pos_act3.move(700, layout_current_pos_y+25)
         self.textbox_pos_act3.resize(200, 20)
         
         self.textbox_pos_act4 = QLineEdit(self)
-        self.textbox_pos_act4.move(950, 425)
+        self.textbox_pos_act4.move(950, layout_current_pos_y+25)
         self.textbox_pos_act4.resize(200, 20)
         
         self.textbox_manual_command_a3 = QLineEdit(self)
-        self.textbox_manual_command_a3.move(200, 525)
+        self.textbox_manual_command_a3.move(200, layout_command_a3_y+25)
         self.textbox_manual_command_a3.resize(200, 20)
 
         self.textbox_manual_command_u1 = QLineEdit(self)
-        self.textbox_manual_command_u1.move(200, 625)
+        self.textbox_manual_command_u1.move(200, layout_command_u1_y+25)
         self.textbox_manual_command_u1.resize(200, 20)
+
+        self.textbox_yokogawa_power = QLineEdit(self)
+        self.textbox_yokogawa_power.move(300, layout_power_y+25)
+        self.textbox_yokogawa_power.resize(200, 20)
+
+        self.textbox_matsusada_power = QLineEdit(self)
+        self.textbox_matsusada_power.move(900, layout_power_y+25)
+        self.textbox_matsusada_power.resize(200, 20)
         
         self.textbox_message_a3 = QLineEdit(self)
-        self.textbox_message_a3.move(300, 800)
-        self.textbox_message_a3.resize(700, 30)
+        self.textbox_message_a3.move(300, 900)
+        self.textbox_message_a3.resize(700, 20)
         
         self.textbox_message_u1 = QLineEdit(self)
-        self.textbox_message_u1.move(300, 850)
-        self.textbox_message_u1.resize(700, 30)
+        self.textbox_message_u1.move(300, 930)
+        self.textbox_message_u1.resize(700, 20)
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
