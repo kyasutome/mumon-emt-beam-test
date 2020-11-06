@@ -1,4 +1,5 @@
 #include <iostream> //標準入出力
+#include <bits/stdc++.h>
 #include <sys/socket.h> //アドレスドメイン
 #include <sys/types.h> //ソケットタイプ
 #include <arpa/inet.h> //バイトオーダの変換に利用

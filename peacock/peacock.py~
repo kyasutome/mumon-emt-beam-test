@@ -23,7 +23,7 @@ class MainWindow(QWidget):
         self.setGeometry(0, 0, 1200, 1000)
         self.setWindowTitle('Peacock ---Acutuator Automaton---')      
         
-        #Dropdown list
+        #Dropdown list        
         self.cb_type_preset = QComboBox(self)
         self.cb_type_preset.addItems(["A", "B", "C", "D", "E", "F", "G", "H", "I"])
         self.cb_type_preset.setGeometry(1080, 615, 70, 50)

@@ -28,6 +28,7 @@ def get_current_position(self,ser_a3, ser_u1, a3, u1):
             self.textbox_pos_act1.setText("Error")
             self.textbox_pos_act2.setText("Error")
             self.textbox_pos_act3.setText("Error")
+        self.qApp.processEvents()
         
     if(u1==True):
         ser_u1.reset_input_buffer()

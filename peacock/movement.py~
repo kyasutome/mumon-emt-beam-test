@@ -122,7 +122,7 @@ def move_loop(self, ser_a3, ser_u1, a3, u1):
 
     time.sleep(10) # wait for the controlers ready
 
-    for icycle in range(9):
+    for icycle in range(2):
         yokogawa_power.output_on(self)
         matsusada_power.output_on(self)
         time.sleep(12)
