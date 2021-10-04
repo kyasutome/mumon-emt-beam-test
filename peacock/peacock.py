@@ -4,7 +4,9 @@ from PyQt5.QtWidgets import *
 import sip
 import serial
 import time
+import tkinter
 import serial.tools.list_ports
+import threading
 
 import movement
 import measurement
@@ -28,18 +30,25 @@ class MainWindow(QWidget):
         self.cb_type_preset.addItems(["A", "B", "C", "D", "E", "F", "G", "H", "I"])
         self.cb_type_preset.setGeometry(1080, 615, 70, 50)
 
+        #Dropdown list
+        self.operation_manual = QCheckBox(self)
+        self.operation_manual.setGeometry(190, 610, 100, 70)
+
+        self.operation_sign = QCheckBox(self)
+        self.operation_sign.setGeometry(1010, 610, 100, 70)
+
         #Serial Port
         a3 = False
         u1 = False
         gs = False
         ports = list(serial.tools.list_ports.comports())
         for p in ports:
-#            if('FTRU3RQX' in str(p)):
-            if('ttyUSB1' in str(p)):
+            if('FTRU3RQX' in str(p)):
+            #if('ttyUSB1' in str(p)):
                 print(p)
                 self.ser_a3 = serial.Serial(
-#                    port ='/dev/tty.usbserial-FTRU3RQX', 
-                    port ='/dev/ttyUSB1', 
+                    port ='/dev/tty.usbserial-FTRU3RQX', 
+                    #port ='/dev/ttyUSB1', 
                     baudrate = 38400,
                     parity = serial.PARITY_NONE,
                     stopbits = serial.STOPBITS_ONE,
@@ -48,12 +57,12 @@ class MainWindow(QWidget):
                     )
                 a3 = True
 
-#            if('FTRVIAFX' in str(p)):
-            if('ttyUSB2' in str(p)):
+            if('FTRVIAFX' in str(p)):
+            #if('ttyUSB2' in str(p)):
                 print(p)
                 self.ser_u1 = serial.Serial(
-#                    port ='/dev/cu.usbserial-FTRVIAFX', 
-                    port ='/dev/ttyUSB2', 
+                    port ='/dev/cu.usbserial-FTRVIAFX', 
+                    #port ='/dev/ttyUSB2', 
                     baudrate = 9600,
                     parity = serial.PARITY_NONE,
                     stopbits = serial.STOPBITS_ONE,
@@ -62,12 +71,12 @@ class MainWindow(QWidget):
                     )
                 u1 = True
 
-#            if('AB0KED3C' in str(p)):
-            if('ttyUSB0' in str(p)):
+            if('AB0KED3C' in str(p)):
+            #if('ttyUSB0' in str(p)):
                 print(p)
                 self.ser_gs = serial.Serial(
-#                    port ='/dev/cu.usbserial-AB0KED3C', 
-                    port ='/dev/ttyUSB0', 
+                    port ='/dev/cu.usbserial-AB0KED3C', 
+                    #port ='/dev/ttyUSB0', 
                     baudrate = 38400,
                     parity = serial.PARITY_NONE,
                     stopbits = serial.STOPBITS_ONE,
@@ -229,7 +238,7 @@ class MainWindow(QWidget):
         
         self.button_resetalarm = QPushButton('Alarm Reset', self)
         self.button_resetalarm.setGeometry(0, layout_alarm_y, 150, 80)
-        self.button_resetalarm.clicked.connect(lambda:util.reset_alarm(self,a3,u1)) 
+        self.button_resetalarm.clicked.connect(lambda:util.reset_alarm(self,a3, u1)) 
 
         self.button_manual_command_a3 = QPushButton('Command For A3', self)
         self.button_manual_command_a3.setGeometry(0, layout_command_a3_y, 150, 80)
@@ -268,24 +277,74 @@ class MainWindow(QWidget):
         self.button_power_matsusada.setGeometry(800, layout_power_y, 80, 80)
         self.button_power_matsusada.clicked.connect(lambda:matsusada_power.output_off(self))
             
-        #Movement
+        #Movement        
         self.button_move_cycle = QPushButton('Move 1 cycle', self)
         self.button_move_cycle.setGeometry(0, layout_cycle_y, 150, 80)
-        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser_a3,self.ser_u1,a3,u1))
+        self.button_move_cycle.clicked.connect(lambda:movement.move_cycle(self,self.ser_a3,self.ser_u1, a3, u1))
         
         self.button_move_loop = QPushButton('Move 1 loop', self)
         self.button_move_loop.setGeometry(0, layout_loop_y, 150, 80)
-        self.button_move_loop.clicked.connect(lambda:movement.move_loop(self, self.ser_a3, self.ser_u1,a3,u1)) 
+        #self.button_move_loop.clicked.connect(lambda:movement.loop_status_monitor(self, self.ser_a3, self.ser_u1,a3,u1)) 
+        self.button_move_loop.clicked.connect(lambda:self.thread_test(a3, u1))
             
         self.button_getpos = QPushButton('Current Position', self)
         self.button_getpos.setGeometry(0, layout_current_pos_y, 150, 80)
         self.button_getpos.clicked.connect(
             lambda:measurement.get_current_position(
             self,self.ser_a3,self.ser_u1,a3,u1)) 
-        
-        
+
+    def thread_test(self, a3, u1):
+        thread1 = threading.Thread(target=movement.loop_status_monitor(self, self.ser_a3, self.ser_u1, a3, u1))
+        #thread1 = threading.Thread(target=movement.loop_status_monitor)
+        thread1.start()
+
+""""
+class SubWindow(MainWindow):
+    def __init__(self, parent=None):
+        super(SubWindow, self).__init__(parent)
+        self.show_loop_status()
+
+    def show_loop_status(self):
+        #Window Setting        
+        self.setGeometry(0, 0, 800, 800)
+        self.setWindowTitle('Peacock ---Acutuator Automaton---')      
+
+        self.button_start = QPushButton('Start', self)
+        self.button_start.setGeometry(100, 20, 100, 50)
+        self.button_start.clicked.connect(lambda:movement.move_loop(self, self.ser_a3, self.ser_u1,a3,u1))
+
+        self.button_move_posA = QPushButton('Pos A', self)
+        self.button_move_posA.setGeometry(100, 100, 180, 180)
+
+        self.button_move_posB = QPushButton('Pos B', self)
+        self.button_move_posB.setGeometry(100, 300, 180, 180)
+
+        self.button_move_posC = QPushButton('Pos C', self)
+        self.button_move_posC.setGeometry(100, 500, 180, 180)
+
+        self.button_move_posD = QPushButton('Pos D', self)
+        self.button_move_posD.setGeometry(300, 100, 180, 180)
+
+        self.button_move_posE = QPushButton('Pos E', self)
+        self.button_move_posE.setGeometry(300, 300, 180, 180)
+
+        self.button_move_posF = QPushButton('Pos F', self)
+        self.button_move_posF.setGeometry(300, 500, 180, 180)
+
+        self.button_move_posG = QPushButton('Pos G', self)
+        self.button_move_posG.setGeometry(500, 100, 180, 180)
+
+        self.button_move_posH = QPushButton('Pos H', self)
+        self.button_move_posH.setGeometry(500, 300, 180, 180)
+
+        self.button_move_posI = QPushButton('Pos I', self)
+        self.button_move_posI.setGeometry(500, 500, 180, 180)
+"""""
+                
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
+    #sub_window = SubWindow()
+    #sub_window.show()
     sys.exit(app.exec_())
